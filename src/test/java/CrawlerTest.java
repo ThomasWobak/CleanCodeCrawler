@@ -2,10 +2,6 @@
 import crawler.Crawler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,12 +27,14 @@ public class CrawlerTest {
     }
 
     @Test
-    void testIsValidLink_ValidURL() throws IOException {
+    void testIsValidLink_ValidURL()  {
         assertTrue(webCrawler.isValidLink("https://google.com"));
+        assertTrue(webCrawler.isValidLink("https://www.erpelstolz.at/gateway/formular-zentral.html"));
     }
 
     @Test
-    void testIsValidLink_BrokenURL() throws IOException {
+    void testIsValidLink_BrokenURL()  {
         assertFalse(webCrawler.isValidLink("htps://google.com"));
+        assertFalse(webCrawler.isValidLink("localhost:4022"));
     }
 }
