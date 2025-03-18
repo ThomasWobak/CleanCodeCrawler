@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Crawler {
-    private static final String FILEPATH ="C:\\Users\\thoma\\OneDrive\\Uni\\SS 25\\Clean Code\\Assignment1\\CrawlerCleanCode\\src\\main\\java\\crawler\\test.md";
+    private static final String FILEPATH ="C:\\Users\\thoma\\OneDrive\\Uni\\SS 25\\Clean Code\\Assignment1\\CrawlerCleanCode\\report.md";
     private static final int HEADINGNUMBERS=6;
     private static final int BADRESPONSECODES=400;
     private final Set<String> visitedUrls = new HashSet<>();
@@ -72,7 +72,7 @@ public class Crawler {
 
 
     private ArrayList<String> extractLinks(Document document) throws IOException {
-        ArrayList<String> allLinks=new ArrayList<String>();
+        ArrayList<String> allLinks= new ArrayList<>();
         Elements links = document.select("a[href]");
         for (Element link : links) {
             allLinks.add(link.absUrl("href"));
@@ -80,7 +80,7 @@ public class Crawler {
         return allLinks;
     }
     private ArrayList<String> extractHeadings(Document document) {
-        ArrayList<String> allHeadings=new ArrayList<String>();
+        ArrayList<String> allHeadings= new ArrayList<>();
         for (int i = 1; i <= HEADINGNUMBERS; i++) {
             Elements headings = document.select("h" + i);
             for (Element heading : headings) {
@@ -102,6 +102,9 @@ public class Crawler {
 
     public boolean isValidLink(String url) {
         try {
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                return false; // Ignore non-HTTP(S) links like mailto:, ftp:, etc.
+            }
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("HEAD");
             return connection.getResponseCode() < BADRESPONSECODES;
