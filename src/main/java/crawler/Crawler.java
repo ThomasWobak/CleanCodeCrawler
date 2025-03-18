@@ -1,6 +1,7 @@
 package crawler;
 
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -28,8 +29,35 @@ public class Crawler {
     }
 
     public void startCrawl() throws IOException {
-
+        if(isValidLink(startUrl)&&isAllowedDomain(startUrl)){
+            crawl(startUrl,0);
+        }
     }
+
+    public void crawl(String url, int depth) throws IOException {
+        if (depth > maxDepth || visitedUrls.contains(url) || !isAllowedDomain(url)) {
+            return;
+        }
+
+        String indent = "--> ".repeat(depth);
+
+        try {
+            Document document = Jsoup.connect(url).get();
+            visitedUrls.add(url);
+            markdownContent.append("\n" + indent + "depth: " + depth + "\n");
+            markdownContent.append(indent + "# " + url + "\n");
+            extractHeadings(document, depth, indent);
+            extractLinks(document, url, depth, indent);
+            saveToMarkdown(FILEPATH);
+
+        } catch (IOException e) {
+            System.out.println("ERROR "+e.getMessage());
+            markdownContent.append("\n" + indent + "--> broken link <" + url + ">\n");
+            saveToMarkdown(FILEPATH);
+
+        }
+    }
+
     private void extractLinks(Document document, String parentUrl, int depth, String indent) throws IOException {
         Elements links = document.select("a[href]");
         for (Element link : links) {
