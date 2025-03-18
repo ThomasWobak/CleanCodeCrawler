@@ -35,10 +35,18 @@ public class Crawler {
         for (Element link : links) {
             String absUrl = link.absUrl("href");
             if (!absUrl.isEmpty() && isValidLink(absUrl) && !visitedUrls.contains(absUrl)) {
-                markdownContent.append(indent + "--> link to <" + absUrl + ">\n");
+                markdownContent.append(indent).append("--> link to <").append(absUrl).append(">\n");
 
             } else if (!isValidLink(absUrl)) {
-                markdownContent.append(indent + "--> broken link <" + absUrl + ">\n");
+                markdownContent.append(indent).append("--> broken link <").append(absUrl).append(">\n");
+            }
+        }
+    }
+    private void extractHeadings(Document document, int depth, String indent) {
+        for (int i = 1; i <= 6; i++) {
+            Elements headings = document.select("h" + i);
+            for (Element heading : headings) {
+                markdownContent.append(indent).append("#".repeat(i)).append(" ").append(heading.text()).append("\n");
             }
         }
     }
