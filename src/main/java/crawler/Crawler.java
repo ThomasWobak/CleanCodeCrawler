@@ -1,6 +1,10 @@
 package crawler;
 
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -24,6 +28,19 @@ public class Crawler {
     public void startCrawl() throws IOException {
 
     }
+    private void extractLinks(Document document, String parentUrl, int depth, String indent) throws IOException {
+        Elements links = document.select("a[href]");
+        for (Element link : links) {
+            String absUrl = link.absUrl("href");
+            if (!absUrl.isEmpty() && isValidLink(absUrl) && !visitedUrls.contains(absUrl)) {
+                markdownContent.append(indent + "--> link to <" + absUrl + ">\n");
+
+            } else if (!isValidLink(absUrl)) {
+                markdownContent.append(indent + "--> broken link <" + absUrl + ">\n");
+            }
+        }
+    }
+
     private boolean isAllowedDomain(String url) {
         return allowedDomains.stream().anyMatch(url::contains);
     }
