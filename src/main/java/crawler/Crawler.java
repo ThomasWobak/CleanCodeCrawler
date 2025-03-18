@@ -8,6 +8,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -55,5 +57,12 @@ public class Crawler {
         }
     }
 
+    public void saveToMarkdown(String filePath) throws IOException {
+        java.nio.file.Path path = Paths.get(filePath);
+        if (!Files.exists(path)) {
+            Files.createFile(path);
+        }
+        Files.write(path, markdownContent.toString().getBytes());
+    }
 
 }
