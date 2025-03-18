@@ -15,7 +15,7 @@ public class Main {
             int depth= Integer.parseInt(args[1]);
             String domain=args[2];
             Crawler crawler=new Crawler(depth, Collections.singleton(domain), startUrl);
-            crawler.crawl();
+            crawler.startCrawl();
         }catch (Exception e) {
             System.out.println(e.getMessage());
         }
