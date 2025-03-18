@@ -1,11 +1,9 @@
 package crawler;
-
-
+import org.jsoup.Jsoup;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -79,11 +77,11 @@ public class Crawler {
         }
     }
 
-    private boolean isAllowedDomain(String url) {
+    public boolean isAllowedDomain(String url) {
         return allowedDomains.stream().anyMatch(url::contains);
     }
 
-    private boolean isValidLink(String url) {
+    public boolean isValidLink(String url) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("HEAD");
