@@ -1,6 +1,5 @@
 package crawler;
 import org.jsoup.Jsoup;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -9,16 +8,19 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Crawler {
     private static final String FILEPATH ="C:\\Users\\thoma\\OneDrive\\Uni\\SS 25\\Clean Code\\Assignment1\\CrawlerCleanCode\\src\\main\\java\\crawler\\test.md";
+    private static final int HEADINGNUMBERS=6;
     private final Set<String> visitedUrls = new HashSet<>();
     private final StringBuilder markdownContent = new StringBuilder();
     private final int maxDepth;
     private final Set<String> allowedDomains;
     private final String startUrl;
+
 
     public Crawler(int maxDepth, Set<String> allowedDomains, String startUrl){
         this.maxDepth = maxDepth;
@@ -42,10 +44,11 @@ public class Crawler {
         try {
             Document document = Jsoup.connect(url).get();
             visitedUrls.add(url);
-            markdownContent.append("\n" + indent + "depth: " + depth + "\n");
-            markdownContent.append(indent + "# " + url + "\n");
-            extractHeadings(document, depth, indent);
-            extractLinks(document, url, depth, indent);
+            markdownContent.append("\n").append(indent).append("depth: ").append(depth).append("\n");
+            markdownContent.append(indent).append("# ").append(url).append("\n");
+            ArrayList<String> headings=extractHeadings(document, depth, indent);
+            logHeadings(headings,indent);
+            ArrayList<String> links=extractLinks(document, url, depth, indent);
             saveToMarkdown(FILEPATH);
 
         } catch (IOException e) {
@@ -56,24 +59,38 @@ public class Crawler {
         }
     }
 
-    private void extractLinks(Document document, String parentUrl, int depth, String indent) throws IOException {
+
+
+    private ArrayList<String> extractLinks(Document document, String parentUrl, int depth, String indent) throws IOException {
+        ArrayList<String> allLinks=new ArrayList<String>();
         Elements links = document.select("a[href]");
         for (Element link : links) {
             String absUrl = link.absUrl("href");
+            allLinks.add(link.absUrl("href"));
             if (!absUrl.isEmpty() && isValidLink(absUrl) && !visitedUrls.contains(absUrl)) {
-                markdownContent.append(indent).append("--> link to <").append(absUrl).append(">\n");
 
+                markdownContent.append(indent).append("--> link to <").append(absUrl).append(">\n");
+                crawl(absUrl, depth+1);
             } else if (!isValidLink(absUrl)) {
                 markdownContent.append(indent).append("--> broken link <").append(absUrl).append(">\n");
             }
         }
+        return allLinks;
     }
-    private void extractHeadings(Document document, int depth, String indent) {
-        for (int i = 1; i <= 6; i++) {
+    private ArrayList<String> extractHeadings(Document document, int depth, String indent) {
+        ArrayList<String> allHeadings=new ArrayList<String>();
+        for (int i = 1; i <= HEADINGNUMBERS; i++) {
             Elements headings = document.select("h" + i);
             for (Element heading : headings) {
-                markdownContent.append(indent).append("#".repeat(i)).append(" ").append(heading.text()).append("\n");
+                String currentHeading="#".repeat(i)+" "+heading.text();
+                allHeadings.add(currentHeading);
             }
+        }
+        return allHeadings;
+    }
+    private void logHeadings(ArrayList<String> headings, String indent) {
+        for (String heading: headings) {
+            markdownContent.append(indent).append(heading).append("\n");
         }
     }
 
