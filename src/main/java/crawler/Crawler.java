@@ -20,23 +20,22 @@ public class Crawler {
     private final StringBuilder markdownContent = new StringBuilder();
     private final int maxDepth;
     private final Set<String> allowedDomains;
-    private final String startUrl;
+    private String currentUrl;
     private Document document;
-    private ArrayList<String> headings;
-    private ArrayList<String> links;
+    private Elements headings;
+    private Elements links;
     private String title;
-    private String url;
 
     public Crawler(int maxDepth, Set<String> allowedDomains, String startUrl){
         this.maxDepth = maxDepth;
         this.allowedDomains = allowedDomains;
-        this.startUrl=startUrl;
+        this.currentUrl =startUrl;
     }
 
     public void startCrawl() throws IOException {
-        if(isValidLink(startUrl)&&isAllowedDomain(startUrl)){
-            logCorrectLink(startUrl,"");
-            crawl(startUrl,0);
+        if(isValidLink(currentUrl)&&isAllowedDomain(currentUrl)){
+            logCorrectLink(currentUrl,"");
+            crawl(currentUrl,0);
             saveToMarkdown(FILEPATH);
         }
     }
@@ -51,12 +50,12 @@ public class Crawler {
         if (depth > maxDepth || visitedUrls.contains(url) || !isAllowedDomain(url)) {
             return;
         }
+        this.currentUrl =url;
         String indent = "--> ".repeat(depth);
+        parse();
+        visitedUrls.add(url);
         try {
-            Document document = Jsoup.connect(url).get();
-            visitedUrls.add(url);
-            ArrayList<String> headings=extractHeadings(document);
-            logHeadings(headings,indent);
+            logHeadings(indent);
             ArrayList<String> links=extractLinks(document);
             for (String link: links) {
                 if (checkCrawlable(link)) {
@@ -72,18 +71,17 @@ public class Crawler {
     }
     private void createDocument(){
         try {
-            document=Jsoup.connect(url).get();
+            document=Jsoup.connect(currentUrl).get();
             title=document.title();
         }catch (IOException e){
-            System.err.println("Error connecting to "+url + "\n"+e.getMessage());
+            System.err.println("Error connecting to "+ currentUrl + "\n"+e.getMessage());
         }
     }
-
-
-
-
-
-
+    private void parse(){
+        createDocument();
+        extractHeadings();
+        extractLinks();
+    }
 
     private void logBrokenLink(String link, String indent) {
         markdownContent.append(indent).append("--> broken link <").append(link).append(">\n");
@@ -95,7 +93,9 @@ public class Crawler {
         return (!link.isEmpty() && isValidLink(link) && !visitedUrls.contains(link));
     }
 
+    //OLD USAGE; TODO DELETE
     private ArrayList<String> extractLinks(Document document) throws IOException {
+        links=document.select("a");
         ArrayList<String> allLinks= new ArrayList<>();
         Elements links = document.select("a[href]");
         for (Element link : links) {
@@ -103,19 +103,14 @@ public class Crawler {
         }
         return allLinks;
     }
-    private ArrayList<String> extractHeadings(Document document) {
-        ArrayList<String> allHeadings= new ArrayList<>();
-        for (int i = 1; i <= HEADINGNUMBERS; i++) {
-            Elements headings = document.select("h" + i);
-            for (Element heading : headings) {
-                String currentHeading="#".repeat(i)+" "+heading.text();
-                allHeadings.add(currentHeading);
-            }
-        }
-        return allHeadings;
+    private void extractLinks() {
+        links = document.select("a");
     }
-    private void logHeadings(ArrayList<String> headings, String indent) {
-        for (String heading: headings) {
+    private void extractHeadings() {
+        headings=document.select("h1,h2,h3,h4,h5,h6");
+    }
+    private void logHeadings( String indent) {
+        for (Element heading: headings) {
             markdownContent.append(indent).append(heading).append("\n");
         }
     }
@@ -126,7 +121,7 @@ public class Crawler {
 
     public boolean isValidLink(String url) {
         try {
-            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            if (!url.startsWith("http://") && !url.startsWith("https://")&&!url.endsWith("jar")) {
                 return false; // Ignore non-HTTP(S) links like mailto:, ftp:, etc.
             }
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -142,6 +137,7 @@ public class Crawler {
             Files.createFile(path);
         }
         Files.write(path, markdownContent.toString().getBytes());
+        System.out.println("Saved to Markdown");
     }
 
 
