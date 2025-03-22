@@ -52,20 +52,15 @@ public class Crawler {
         String indent = "--> ".repeat(depth);
         parse();
         visitedUrls.add(url);
-        try {
-            logHeadings(indent);
-
-            for (Element currentLink: links) {
-                String link=currentLink.absUrl("href");
-                if (checkCrawlable(link)) {
-                    logCorrectLink(link, indent);
-                    crawl(link, depth+1);
-                } else if (!isValidLink(link)) {
-                    logBrokenLink(link, indent);
-                }
+        logHeadings(indent);
+        for (Element currentLink: links) {
+            String link=currentLink.absUrl("href");
+            if (checkCrawlable(link)) {
+                logCorrectLink(link, indent);
+                crawl(link, depth+1);
+            } else if (!isValidLink(link)) {
+                logBrokenLink(link, indent);
             }
-        } catch (IOException e) {
-            logBrokenLink(url, indent);
         }
     }
     private void createDocument(){
