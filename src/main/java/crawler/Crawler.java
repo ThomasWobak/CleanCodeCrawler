@@ -8,13 +8,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Crawler {
     private static final String FILEPATH ="C:\\Users\\thoma\\OneDrive\\Uni\\SS 25\\Clean Code\\Assignment1\\CrawlerCleanCode\\report.md";
-    private static final int HEADINGNUMBERS=6;
     private static final int BADRESPONSECODES=400;
     private final Set<String> visitedUrls = new HashSet<>();
     private final StringBuilder markdownContent = new StringBuilder();
@@ -56,8 +54,9 @@ public class Crawler {
         visitedUrls.add(url);
         try {
             logHeadings(indent);
-            ArrayList<String> links=extractLinks(document);
-            for (String link: links) {
+
+            for (Element currentLink: links) {
+                String link=currentLink.absUrl("href");
                 if (checkCrawlable(link)) {
                     logCorrectLink(link, indent);
                     crawl(link, depth+1);
@@ -91,17 +90,6 @@ public class Crawler {
     }
     private boolean checkCrawlable(String link){
         return (!link.isEmpty() && isValidLink(link) && !visitedUrls.contains(link));
-    }
-
-    //OLD USAGE; TODO DELETE
-    private ArrayList<String> extractLinks(Document document) throws IOException {
-        links=document.select("a");
-        ArrayList<String> allLinks= new ArrayList<>();
-        Elements links = document.select("a[href]");
-        for (Element link : links) {
-            allLinks.add(link.absUrl("href"));
-        }
-        return allLinks;
     }
     private void extractLinks() {
         links = document.select("a");
