@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Crawler {
-    private static final String FILEPATH = "C:\\Users\\thoma\\OneDrive\\Uni\\SS 25\\Clean Code\\Assignment1\\CrawlerCleanCode\\report.md";
+    private static final String FILEPATH = "reports\\reports.md";
     private static final int INVALIDRESPONSECODES = 400;
     private final Set<String> visitedUrls = new HashSet<>();
     private final StringBuilder markdownContent = new StringBuilder();
@@ -150,6 +150,4 @@ public class Crawler {
         Files.write(path, markdownContent.toString().getBytes());
         System.out.println("Saved to Markdown");
     }
-
-
 }
