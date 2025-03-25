@@ -21,17 +21,19 @@ public class Crawler {
     private String currentUrl;
     private Document document;
     private Elements headings;
+    private int currentDepth;
     private Elements links;
 
     public Crawler(int maxDepth, Set<String> allowedDomains, String startUrl){
         this.maxDepth = maxDepth;
         this.allowedDomains = allowedDomains;
         this.currentUrl =startUrl;
+        this.currentDepth=0;
     }
 
     public void startCrawl() throws IOException {
         if(isValidLink(currentUrl)&&isAllowedDomain(currentUrl)){
-            logCorrectLink(currentUrl,"");
+            logCorrectLink(currentUrl);
             crawl(currentUrl,0);
             saveToMarkdown(FILEPATH);
         }
@@ -46,15 +48,15 @@ public class Crawler {
         if (depth > maxDepth || visitedUrls.contains(url) || !isAllowedDomain(url)) {
             return;
         }
+        this.currentDepth=depth;
         this.currentUrl =url;
-        String indent = "--> ".repeat(depth);
         parse();
         cleanUrl();
         visitedUrls.add(currentUrl);
-        logHeadings(indent);
+        logHeadings();
         for (Element currentLink: links) {
             String link=currentLink.absUrl("href");
-            logLink(link,indent);
+            logLink(link);
             if (checkCrawlable(link)) {
                 crawl(link, depth+1);
             }
@@ -68,11 +70,11 @@ public class Crawler {
         }
     }
 
-    private void logLink(String link, String indent) {
+    private void logLink(String link) {
         if(isValidLink(link)){
-            logCorrectLink(link, indent);
+            logCorrectLink(link);
         }else {
-            logBrokenLink(link,indent);
+            logBrokenLink(link);
         }
     }
 
@@ -90,11 +92,11 @@ public class Crawler {
         extractLinks();
     }
 
-    private void logBrokenLink(String link, String indent) {
-        markdownContent.append(indent).append("--> broken link <").append(link).append(">\n");
+    private void logBrokenLink(String link) {
+        markdownContent.append(getIndent()).append("--> broken link <").append(link).append(">\n");
     }
-    private void logCorrectLink(String link, String indent) {
-        markdownContent.append(indent).append("--> link to <").append(link).append(">\n");
+    private void logCorrectLink(String link) {
+        markdownContent.append(getIndent()).append("--> link to <").append(link).append(">\n");
     }
     private boolean checkCrawlable(String link){
         return (!link.isEmpty() && isValidLink(link) && !visitedUrls.contains(link));
@@ -105,10 +107,13 @@ public class Crawler {
     private void extractHeadings() {
         headings=document.select("h1,h2,h3,h4,h5,h6");
     }
-    private void logHeadings( String indent) {
+    private void logHeadings() {
         for (Element heading: headings) {
-            markdownContent.append(indent).append(heading).append("\n");
+            markdownContent.append(getIndent()).append(heading).append("\n");
         }
+    }
+    private String getIndent(){
+        return  "--> ".repeat(currentDepth);
     }
 
     public boolean isAllowedDomain(String url) {
