@@ -114,6 +114,7 @@ public class Crawler {
             return false;
         }
     }
+
     public void saveToMarkdown(String filePath) throws IOException {
         java.nio.file.Path path = Paths.get(filePath);
         if (!Files.exists(path)) {
@@ -122,6 +123,4 @@ public class Crawler {
         Files.write(path, markdownContent.toString().getBytes());
         System.out.println("Saved to Markdown");
     }
-
-
 }
