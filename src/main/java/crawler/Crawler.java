@@ -22,7 +22,6 @@ public class Crawler {
     private Document document;
     private Elements headings;
     private Elements links;
-    private String title;
 
     public Crawler(int maxDepth, Set<String> allowedDomains, String startUrl){
         this.maxDepth = maxDepth;
@@ -42,9 +41,8 @@ public class Crawler {
      * Crawls a website, logging the headers and further links, then recursively crawls those links if they within the allowed domain
      * @param url current URL to crawl
      * @param depth current Depth in the crawl
-     * @throws IOException if the link doesn't work
      */
-    public void crawl(String url, int depth) throws IOException {
+    public void crawl(String url, int depth) {
         if (depth > maxDepth || visitedUrls.contains(url) || !isAllowedDomain(url)) {
             return;
         }
@@ -55,18 +53,24 @@ public class Crawler {
         logHeadings(indent);
         for (Element currentLink: links) {
             String link=currentLink.absUrl("href");
+            logLink(link,indent);
             if (checkCrawlable(link)) {
-                logCorrectLink(link, indent);
                 crawl(link, depth+1);
-            } else if (!isValidLink(link)) {
-                logBrokenLink(link, indent);
             }
         }
     }
+    private void logLink(String link, String indent) {
+        if(isValidLink(link)){
+            logCorrectLink(link, indent);
+        }else {
+            logBrokenLink(link,indent);
+        }
+    }
+
     private void createDocument(){
         try {
             document=Jsoup.connect(currentUrl).get();
-            title=document.title();
+
         }catch (IOException e){
             System.err.println("Error connecting to "+ currentUrl + "\n"+e.getMessage());
         }
