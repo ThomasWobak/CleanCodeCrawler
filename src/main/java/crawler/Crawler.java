@@ -36,7 +36,7 @@ public class Crawler {
     public void startCrawl() throws IOException {
         if (isValidLink(currentUrl) && isAllowedDomain(currentUrl)) {
             logCorrectLink(currentUrl);
-            crawl(currentUrl, 0);
+            crawlLink(currentUrl, 0);
             saveToMarkdown();
         }
     }
@@ -46,7 +46,7 @@ public class Crawler {
      * @param url current URL to crawl
      * @param depth current Depth in the crawl
      */
-    protected void crawl(String url, int depth) {
+    protected void crawlLink(String url, int depth) {
         if (depth > maxDepth || visitedUrls.contains(url) || !isAllowedDomain(url)) {
             return;
         }
@@ -60,7 +60,7 @@ public class Crawler {
             String link = currentLink.absUrl("href");
             logLink(link);
             if (isCrawlable(link)) {
-                crawl(link, depth + 1);
+                crawlLink(link, depth + 1);
             }
         }
     }
