@@ -35,7 +35,7 @@ public class Crawler {
         if(isValidLink(currentUrl)&&isAllowedDomain(currentUrl)){
             logCorrectLink(currentUrl);
             crawl(currentUrl,0);
-            saveToMarkdown(FILEPATH);
+            saveToMarkdown();
         }
     }
 
@@ -44,7 +44,7 @@ public class Crawler {
      * @param url current URL to crawl
      * @param depth current Depth in the crawl
      */
-    public void crawl(String url, int depth) {
+    protected void crawl(String url, int depth) {
         if (depth > maxDepth || visitedUrls.contains(url) || !isAllowedDomain(url)) {
             return;
         }
@@ -64,13 +64,13 @@ public class Crawler {
     }
 
     //Removes trailing /
-    private void cleanUrl() {
+    protected void cleanUrl() {
         if (currentUrl != null && currentUrl.endsWith("/")) {
             currentUrl= currentUrl.substring(0, currentUrl.length() - 1);
         }
     }
 
-    private void logLink(String link) {
+    protected void logLink(String link) {
         if(isValidLink(link)){
             logCorrectLink(link);
         }else {
@@ -78,7 +78,7 @@ public class Crawler {
         }
     }
 
-    private void createDocument(){
+    protected void createDocument(){
         try {
             document=Jsoup.connect(currentUrl).get();
 
@@ -86,41 +86,41 @@ public class Crawler {
             System.err.println("Error connecting to "+ currentUrl + "\n"+e.getMessage());
         }
     }
-    private void parse(){
+    protected void parse(){
         createDocument();
         extractHeadings();
         extractLinks();
     }
 
-    private void logBrokenLink(String link) {
+    protected void logBrokenLink(String link) {
         markdownContent.append(getIndent()).append("--> broken link <").append(link).append(">\n");
     }
-    private void logCorrectLink(String link) {
+    protected void logCorrectLink(String link) {
         markdownContent.append(getIndent()).append("--> link to <").append(link).append(">\n");
     }
-    private boolean checkCrawlable(String link){
+    protected boolean checkCrawlable(String link){
         return (!link.isEmpty() && isValidLink(link) && !visitedUrls.contains(link));
     }
-    private void extractLinks() {
+    protected void extractLinks() {
         links = document.select("a");
     }
-    private void extractHeadings() {
+    protected void extractHeadings() {
         headings=document.select("h1,h2,h3,h4,h5,h6");
     }
-    private void logHeadings() {
+    protected void logHeadings() {
         for (Element heading: headings) {
             markdownContent.append(getIndent()).append(heading).append("\n");
         }
     }
-    private String getIndent(){
+    protected String getIndent(){
         return  "--> ".repeat(currentDepth);
     }
 
-    public boolean isAllowedDomain(String url) {
+    protected boolean isAllowedDomain(String url) {
         return allowedDomains.stream().anyMatch(url::contains);
     }
 
-    public boolean isValidLink(String url) {
+    protected boolean isValidLink(String url) {
         try {
             if (!url.startsWith("http://") && !url.startsWith("https://")&&!url.endsWith("jar")) {
                 return false; // Ignore non-HTTP(S) links like mailto:, ftp:, etc.
@@ -132,8 +132,8 @@ public class Crawler {
             return false;
         }
     }
-    public void saveToMarkdown(String filePath) throws IOException {
-        java.nio.file.Path path = Paths.get(filePath);
+    protected void saveToMarkdown() throws IOException {
+        java.nio.file.Path path = Paths.get(Crawler.FILEPATH);
         if (!Files.exists(path)) {
             Files.createFile(path);
         }
