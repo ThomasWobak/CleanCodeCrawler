@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class Crawler {
     private static final String FILEPATH ="C:\\Users\\thoma\\OneDrive\\Uni\\SS 25\\Clean Code\\Assignment1\\CrawlerCleanCode\\report.md";
-    private static final int BADRESPONSECODES=400;
+    private static final int INVALIDRESPONSECODES =400;
     private final Set<String> visitedUrls = new HashSet<>();
     private final StringBuilder markdownContent = new StringBuilder();
     private final int maxDepth;
@@ -57,7 +57,7 @@ public class Crawler {
         for (Element currentLink: links) {
             String link=currentLink.absUrl("href");
             logLink(link);
-            if (checkCrawlable(link)) {
+            if (isCrawlable(link)) {
                 crawl(link, depth+1);
             }
         }
@@ -98,7 +98,7 @@ public class Crawler {
     protected void logCorrectLink(String link) {
         markdownContent.append(getIndent()).append("--> link to <").append(link).append(">\n");
     }
-    protected boolean checkCrawlable(String link){
+    protected boolean isCrawlable(String link){
         return (!link.isEmpty() && isValidLink(link) && !visitedUrls.contains(link));
     }
     protected void extractLinks() {
@@ -127,7 +127,7 @@ public class Crawler {
             }
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("HEAD");
-            return connection.getResponseCode() < BADRESPONSECODES;
+            return connection.getResponseCode() < INVALIDRESPONSECODES;
         } catch (IOException e) {
             return false;
         }
