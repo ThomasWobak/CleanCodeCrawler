@@ -49,7 +49,8 @@ public class Crawler {
         this.currentUrl =url;
         String indent = "--> ".repeat(depth);
         parse();
-        visitedUrls.add(url);
+        cleanUrl();
+        visitedUrls.add(currentUrl);
         logHeadings(indent);
         for (Element currentLink: links) {
             String link=currentLink.absUrl("href");
@@ -59,6 +60,14 @@ public class Crawler {
             }
         }
     }
+
+    //Removes trailing /
+    private void cleanUrl() {
+        if (currentUrl != null && currentUrl.endsWith("/")) {
+            currentUrl= currentUrl.substring(0, currentUrl.length() - 1);
+        }
+    }
+
     private void logLink(String link, String indent) {
         if(isValidLink(link)){
             logCorrectLink(link, indent);
