@@ -54,7 +54,7 @@ public class Crawler {
         this.currentUrl = url;
         parse();
         cleanUrl();
-        visitedUrls.add(currentUrl);
+        markAsVisited(currentUrl);
         logHeadings();
         for (Element currentLink : links) {
             String link = currentLink.absUrl("href");
@@ -149,5 +149,9 @@ public class Crawler {
         }
         Files.write(path, markdownContent.toString().getBytes());
         System.out.println("Saved to Markdown");
+    }
+
+    protected void markAsVisited(String link) {
+        visitedUrls.add(link);
     }
 }

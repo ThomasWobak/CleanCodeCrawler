@@ -133,4 +133,25 @@ class CrawlerTest {
         webCrawler.cleanUrl();
         assertEquals("https://example.com", currentUrlField.get(webCrawler));
     }
+
+    @Test
+    void testIsCrawlableSuccess()  {
+        assertTrue(webCrawler.isCrawlable("https://example.com"));
+    }
+
+    @Test
+    void testIsCrawlableEmptyString() {
+        assertFalse(webCrawler.isCrawlable(""));
+    }
+
+    @Test
+    void testIsCrawlableAlreadyCrawled()  {
+        webCrawler.markAsVisited("https://example.com");
+        assertFalse(webCrawler.isCrawlable("https://example.com"));
+    }
+
+    @Test
+    void testIsCrawlableInvalidLink() {
+        assertFalse(webCrawler.isCrawlable("example.com"));
+    }
 }
