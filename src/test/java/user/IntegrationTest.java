@@ -4,14 +4,13 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import crawler.Crawler;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 
@@ -68,8 +67,8 @@ class IntegrationTest {
         baseUrl = "http://localhost:" + PORT;
     }
 
-    @AfterAll
-    static void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         server.stop(0);
         Files.deleteIfExists(Paths.get("reports/reports.md"));
     }
