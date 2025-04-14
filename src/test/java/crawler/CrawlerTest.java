@@ -239,18 +239,6 @@ class CrawlerTest {
         return Jsoup.parse(html);
     }
 
-    private static Document getDummyDocumentWithSubLink() {
-        String html = "<html>" +
-                "<head><title>Dummy Title</title></head>" +
-                "<body>" +
-                "<h1>Dummy Heading</h1>" +
-                "<p>Dummy paragraph content.</p>" +
-                "<a href= \"https://test.com/\">About</a>" +
-                "</body>" +
-                "</html>";
-        return Jsoup.parse(html);
-    }
-
     private static Elements extractHeadings(Document document) {
         return document.select("h1,h2,h3,h4,h5,h6");
     }
