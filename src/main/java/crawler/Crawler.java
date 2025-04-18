@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Crawler {
-    private static final String FILEPATH = "reports\\reports.md";
+    private static final String FILEPATH = "reports\\report.md";
     private static final int INVALIDRESPONSECODES = 400;
     private final Set<String> visitedUrls = new HashSet<>();
     private final StringBuilder markdownContent = new StringBuilder();
@@ -104,7 +104,7 @@ public class Crawler {
     }
 
     protected boolean isCrawlable(String link) {
-        return (!link.isEmpty() && isValidLink(link) && !visitedUrls.contains(link));
+        return (!link.isEmpty() && !visitedUrls.contains(link)&& isValidLink(link));
     }
 
     protected void extractLinks() {
