@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Crawler {
-    private static final String FILEPATH = "C:\\Users\\thoma\\OneDrive\\Uni\\SS 25\\Clean Code\\Assignment1\\CrawlerCleanCode\\report.md";
+    private static final String FILEPATH = "reports\\reports.md";
     private static final int INVALIDRESPONSECODES = 400;
     private final Set<String> visitedUrls = new HashSet<>();
     private final StringBuilder markdownContent = new StringBuilder();
@@ -54,7 +54,7 @@ public class Crawler {
         this.currentUrl = url;
         parse();
         cleanUrl();
-        visitedUrls.add(currentUrl);
+        markAsVisited(currentUrl);
         logHeadings();
         for (Element currentLink : links) {
             String link = currentLink.absUrl("href");
@@ -151,5 +151,7 @@ public class Crawler {
         System.out.println("Saved to Markdown");
     }
 
-
+    protected void markAsVisited(String link) {
+        visitedUrls.add(link);
+    }
 }
