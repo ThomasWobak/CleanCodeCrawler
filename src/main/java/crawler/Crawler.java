@@ -16,6 +16,7 @@ import java.util.Set;
 public class Crawler {
     private static final String FILEPATH = "report\\report.md";
     private static final int INVALIDRESPONSECODES = 400;
+    private static final int TIMEOUTMILLISECONDS = 2000;
     private final Set<String> visitedUrls = new HashSet<>();
     private final StringBuilder markdownContent = new StringBuilder();
     private final int maxDepth;
@@ -35,9 +36,9 @@ public class Crawler {
 
     public void startCrawl() throws IOException {
         if (isValidLink(currentUrl) && isAllowedDomain(currentUrl)) {
-            logCorrectLink(currentUrl);
+            cleanUrl();
             crawlLink(currentUrl, 0);
-        }else{
+        } else {
             logBrokenLink(currentUrl);
         }
         saveToMarkdown();
@@ -54,8 +55,8 @@ public class Crawler {
         }
         this.currentDepth = depth;
         this.currentUrl = url;
-        parse();
         cleanUrl();
+        parse();
         markAsVisited(currentUrl);
         logHeadings();
         for (Element currentLink : links) {
@@ -106,7 +107,7 @@ public class Crawler {
     }
 
     protected boolean isCrawlable(String link) {
-        return (!link.isEmpty() && !visitedUrls.contains(link)&& isValidLink(link));
+        return (!link.isEmpty() && !visitedUrls.contains(link) && isValidLink(link));
     }
 
     protected void extractLinks() {
@@ -138,6 +139,8 @@ public class Crawler {
             }
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(TIMEOUTMILLISECONDS);
+            connection.setReadTimeout(TIMEOUTMILLISECONDS);
             return connection.getResponseCode() < INVALIDRESPONSECODES;
         } catch (IOException e) {
             return false;
@@ -155,5 +158,6 @@ public class Crawler {
 
     protected void markAsVisited(String link) {
         visitedUrls.add(link);
+        visitedUrls.add(link + "/");
     }
 }
