@@ -28,7 +28,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class CrawlerTest {
-    private static final String FILE_PATH = "reports\\reports.md";
+    private static final String FILE_PATH = "report\\report.md";
     private Crawler webCrawler;
 
     @BeforeEach
