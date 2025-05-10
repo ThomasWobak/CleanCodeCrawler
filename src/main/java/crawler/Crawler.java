@@ -47,22 +47,20 @@ public class Crawler {
                 latch.countDown();
             }
         }
-
         latch.await();
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
         saveToMarkdown();
     }
 
-    private void crawlLink(String url, int depth) {
+    protected void crawlLink(String url, int depth) {
         String cleanedUrl = cleanUrl(url);
+        visitedUrls.add(cleanedUrl);
         if (depth > maxDepth || visitedUrls.contains(cleanedUrl) || !isAllowedDomain(cleanedUrl)) return;
 
-        visitedUrls.add(cleanedUrl);
-        System.out.println("Crawling link "+cleanedUrl);
         Document doc;
         try {
-            doc = Jsoup.connect(cleanedUrl).timeout(TIMEOUTMILLISECONDS).get();
+             doc=parseDocument(cleanedUrl);
         } catch (IOException e) {
             logBrokenLink(cleanedUrl, depth);
             return;
@@ -78,11 +76,14 @@ public class Crawler {
         }
     }
 
-    private boolean isCrawlable(String link) {
+    protected Document parseDocument(String url) throws IOException {
+        return Jsoup.connect(url).timeout(TIMEOUTMILLISECONDS).get();
+    }
+    protected boolean isCrawlable(String link) {
         return (!link.isEmpty() && !visitedUrls.contains(link) && isValidLink(link));
     }
 
-    private void logHeadings(Document doc, String url, int depth) {
+    protected void logHeadings(Document doc, String url, int depth) {
         Elements headings = doc.select("h1,h2,h3,h4,h5,h6");
         String indent = "--> ".repeat(depth);
         synchronized (markdownContent) {
@@ -93,7 +94,7 @@ public class Crawler {
         }
     }
 
-    private void logLink(String link, int depth) {
+    protected void logLink(String link, int depth) {
         if (isValidLink(link)) {
             logCorrectLink(link, depth);
         } else {
@@ -101,30 +102,30 @@ public class Crawler {
         }
     }
 
-    private void logBrokenLink(String link, int depth) {
+    protected void logBrokenLink(String link, int depth) {
         synchronized (markdownContent) {
             markdownContent.append("--> ".repeat(depth)).append("--> broken link <").append(link).append(">\n");
         }
     }
 
-    private void logCorrectLink(String link, int depth) {
+    protected void logCorrectLink(String link, int depth) {
         synchronized (markdownContent) {
             markdownContent.append("--> ".repeat(depth)).append("--> link to <").append(link).append(">\n");
         }
     }
 
-    private String cleanUrl(String url) {
+    protected String cleanUrl(String url) {
         if (url.endsWith("/")) {
             return url.substring(0, url.length() - 1);
         }
         return url;
     }
 
-    private boolean isAllowedDomain(String url) {
+    protected boolean isAllowedDomain(String url) {
         return allowedDomains.stream().anyMatch(url::contains);
     }
 
-    private boolean isValidLink(String url) {
+    protected boolean isValidLink(String url) {
         try {
             if (!url.startsWith("http://") && !url.startsWith("https://") && !url.endsWith("jar")) return false;
 
@@ -138,7 +139,7 @@ public class Crawler {
         }
     }
 
-    private void saveToMarkdown() throws IOException {
+    protected void saveToMarkdown() throws IOException {
         java.nio.file.Path path = Paths.get(FILEPATH);
         Files.createDirectories(path.getParent());
         Files.write(path, markdownContent.toString().getBytes());
