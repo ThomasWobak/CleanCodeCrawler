@@ -32,7 +32,6 @@ public class Crawler {
 
     public void startCrawl(List<String> startUrls) throws InterruptedException, IOException {
         CountDownLatch latch = new CountDownLatch(startUrls.size());
-
         for (String startUrl : startUrls) {
             if (isValidLink(startUrl) && isAllowedDomain(startUrl)) {
                 executor.submit(() -> {
