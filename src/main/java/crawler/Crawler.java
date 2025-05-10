@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Crawler {
-    private static final String FILEPATH = "C:\\Users\\thoma\\Desktop\\Arbeitstein_Assignment_03\\report.md";
+    private static final String FILEPATH = "C:\\Users\\thoma\\Desktop\\crawlerOutput\\report.md";
     private static final int INVALIDRESPONSECODES = 400;
     private static final int TIMEOUTMILLISECONDS = 2000;
     private static final int THREAD_POOL_SIZE = 20;
@@ -86,7 +86,7 @@ public class Crawler {
         Elements headings = doc.select("h1,h2,h3,h4,h5,h6");
         String indent = "--> ".repeat(depth);
         synchronized (markdownContent) {
-            markdownContent.append(indent).append("Page: ").append(url).append("\n\n");
+            markdownContent.append(indent).append("\n\nPage: ").append(url).append("\n");
             for (Element heading : headings) {
                 markdownContent.append(indent).append(heading).append("\n");
             }
