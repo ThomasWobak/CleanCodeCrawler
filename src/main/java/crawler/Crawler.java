@@ -54,9 +54,9 @@ public class Crawler {
 
     protected void crawlLink(String url, int depth) {
         String cleanedUrl = cleanUrl(url);
-        visitedUrls.add(cleanedUrl);
-        if (depth > maxDepth || visitedUrls.contains(cleanedUrl) || !isAllowedDomain(cleanedUrl)) return;
 
+        if (depth > maxDepth || visitedUrls.contains(cleanedUrl) || !isAllowedDomain(cleanedUrl)) return;
+        visitedUrls.add(cleanedUrl);
         Document doc;
         try {
              doc=parseDocument(cleanedUrl);
