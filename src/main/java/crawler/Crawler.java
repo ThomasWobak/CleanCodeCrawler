@@ -105,8 +105,8 @@ public class Crawler {
     }
 
     protected String getHeadingLine(int depth, Element heading) {
-        return "# ".repeat(getHeadingLevel(heading.tagName())) +
-                getIndent(depth) + heading.text() + "\n";
+        return getIndent(depth)+"# ".repeat(getHeadingLevel(heading.tagName()))
+                 + heading.text() + "\n";
     }
 
     protected int getHeadingLevel(String tagName) {
@@ -203,12 +203,12 @@ public class Crawler {
             out.append(getIndent(node.depth)).append("\n<br>link to: ").append(node.rawHtml).append("\n");
             out.append(getIndent(node.depth)).append("<br>depth: ").append(node.depth).append("\n");
             for (String h : node.headings) {
-                out.append(getIndent(node.depth)).append(h);
+                out.append(h);
             }
             for (CrawlNode child : node.children) {
                 renderTree(child, out);  // recursive inline
             }
-            out.append("\n\n");
+            out.append("\n");
         }
     }
 }
