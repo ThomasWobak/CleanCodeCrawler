@@ -3,6 +3,7 @@ package crawler;
 import logger.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import parser.ParsedInputArguments;
 import parser.Parser;
 import writer.Writer;
 
@@ -20,28 +21,33 @@ public class Crawler {
     private final Phaser phaser = new Phaser(1);
     private final Logger logger = new Logger();
     private final Writer writer = new Writer(FILEPATH);
-    private final Parser parser;
+    private final Parser parser=new Parser();
+    private final Set<String> allowedDomains;
+    private final String startUrl;
 
-    public Crawler(int maxDepth, Set<String> allowedDomains) {
-        this.maxDepth = maxDepth;
-        this.parser=new Parser(allowedDomains);
+    public Crawler(ParsedInputArguments inputArguments) {
+        this.maxDepth = inputArguments.getMaxDepth();
+        this.allowedDomains=inputArguments.getAllowedDomains();
+        this.startUrl= inputArguments.getStartUrl();
+
     }
 
-    public void startCrawl(List<String> startUrls) throws InterruptedException, IOException {
+    public void startCrawl() throws InterruptedException, IOException {
         List<CrawlNode> roots = new ArrayList<>();
 
-        for (String url : startUrls) {
-            if (parser.isValidLink(url) && parser.isAllowedDomain(url)) {
-                CrawlNode root = new CrawlNode(url, "<a>" + url + "</a>", 0, maxDepth);
+
+            if (parser.isValidLink(startUrl) && parser.isAllowedDomain(startUrl,allowedDomains)) {
+                CrawlNode root = new CrawlNode(startUrl, "<a>" + startUrl + "</a>", 0, maxDepth);
                 roots.add(root);
                 phaser.register();
                 executor.submit(() -> crawlLink(root));
+
             } else {
-                CrawlNode root = new CrawlNode(url, "<a>" + url + "</a>", 0, maxDepth);
+                CrawlNode root = new CrawlNode(startUrl, "<a>" + startUrl + "</a>", 0, maxDepth);
                 logger.logBrokenLink(root, root.rawHtml);
                 roots.add(root);
             }
-        }
+
         phaser.arriveAndAwaitAdvance();
         executor.shutdown();
         executor.awaitTermination(1, TimeUnit.MINUTES);
@@ -50,46 +56,44 @@ public class Crawler {
 
     protected void crawlLink(CrawlNode node) {
         String cleanedUrl = parser.cleanUrl(node.url);
-        if (node.depth > maxDepth || !parser.isAllowedDomain(cleanedUrl) || !visitedUrls.add(cleanedUrl)) {
+
+        if (node.depth > maxDepth || !parser.isAllowedDomain(cleanedUrl,allowedDomains) || !visitedUrls.add(cleanedUrl)||!visitedUrls.add(node.rawHtml)) {
             phaser.arriveAndDeregister();
             return;
         }
-        System.out.println("Crawling link "+cleanedUrl);
-        visitedUrls.add(node.url);
+
         Document doc;
         try {
             doc = parser.parseDocument(node.url);
             if(!parser.isValidLink(node.url)){
                 throw new IOException("Invalid link");
             }
+            if(parser.isValidLink(node.url)){
+                logger.logHeadings(node, doc);
+            }
+
+
+            for (Element linkElem : doc.select("a[href]")) {
+                String link = linkElem.absUrl("href");
+                String rawChildHtml = linkElem.outerHtml();
+
+                if (!parser.isValidLink(link)) {
+                    logger.logBrokenLink(node, rawChildHtml);
+                    continue;
+                }
+                if (parser.isCrawlable(link,visitedUrls)) {
+                    CrawlNode child = new CrawlNode(link, rawChildHtml, node.depth + 1, maxDepth);
+                    node.children.add(child);
+                    phaser.register();
+                    executor.submit(() -> crawlLink(child));
+                } else {
+                    logger.logLink(node, rawChildHtml);
+                }
+            }
         } catch (IOException e) {
             logger.logBrokenLink(node, node.rawHtml);
             phaser.arriveAndDeregister();
             return;
-        }
-        if(parser.isValidLink(node.url)){
-            logger.logHeadings(node, doc);
-        }
-
-
-        for (Element linkElem : doc.select("a[href]")) {
-            String link = linkElem.absUrl("href");
-            String rawChildHtml = linkElem.outerHtml();
-
-            if (!parser.isValidLink(link)) {
-                logger.logBrokenLink(node, rawChildHtml);
-                continue;
-            }
-
-            if (parser.isCrawlable(link,visitedUrls)) {
-                CrawlNode child = new CrawlNode(link, rawChildHtml, node.depth + 1, maxDepth);
-                node.children.add(child);
-                phaser.register();
-                executor.submit(() -> crawlLink(child));
-            } else {
-                logger.logLink(node, rawChildHtml);
-
-            }
         }
         phaser.arriveAndDeregister();
     }

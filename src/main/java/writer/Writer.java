@@ -34,6 +34,7 @@ public class Writer {
                 out.append("-->".repeat(node.depth)).append(linkLog).append("\n");
             }
         } else {
+
             out.append("-->".repeat(node.depth)).append("\n<br>link to: ").append(node.rawHtml).append("\n");
             out.append("-->".repeat(node.depth)).append("<br>depth: ").append(node.depth).append("\n");
             for (String h : node.headings) {
