@@ -8,7 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Set;
 
-public class Parser {
+public class LinkParser {
     private static final int INVALIDRESPONSECODES = 400;
     private static final int TIMEOUTMILLISECONDS = 2000;
 

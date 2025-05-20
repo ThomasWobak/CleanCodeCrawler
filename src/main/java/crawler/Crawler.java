@@ -4,7 +4,7 @@ import logger.Logger;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import parser.ParsedInputArguments;
-import parser.Parser;
+import parser.LinkParser;
 import writer.Writer;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class Crawler {
     private final Phaser phaser = new Phaser(1);
     private final Logger logger = new Logger();
     private final Writer writer = new Writer(FILEPATH);
-    private final Parser parser = new Parser();
+    private final LinkParser linkParser = new LinkParser();
     private final Set<String> allowedDomains;
     private final String startUrl;
 
@@ -36,7 +36,7 @@ public class Crawler {
         List<CrawlNode> roots = new ArrayList<>();
 
 
-        if (parser.isValidLink(startUrl) && parser.isAllowedDomain(startUrl, allowedDomains)) {
+        if (linkParser.isValidLink(startUrl) && linkParser.isAllowedDomain(startUrl, allowedDomains)) {
             CrawlNode root = new CrawlNode(startUrl, "<a>" + startUrl + "</a>", 0, maxDepth);
             roots.add(root);
             phaser.register();
@@ -55,20 +55,20 @@ public class Crawler {
     }
 
     protected void crawlLink(CrawlNode node) {
-        String cleanedUrl = parser.cleanUrl(node.url);
+        String cleanedUrl = linkParser.cleanUrl(node.url);
 
-        if (node.depth > maxDepth || !parser.isAllowedDomain(cleanedUrl, allowedDomains) || !visitedUrls.add(cleanedUrl) || !visitedUrls.add(node.rawHtml)) {
+        if (node.depth > maxDepth || !linkParser.isAllowedDomain(cleanedUrl, allowedDomains) || !visitedUrls.add(cleanedUrl) || !visitedUrls.add(node.rawHtml)) {
             phaser.arriveAndDeregister();
             return;
         }
 
         Document doc;
         try {
-            doc = parser.parseDocument(node.url);
-            if (!parser.isValidLink(node.url)) {
+            doc = linkParser.parseDocument(node.url);
+            if (!linkParser.isValidLink(node.url)) {
                 throw new IOException("Invalid link");
             }
-            if (parser.isValidLink(node.url)) {
+            if (linkParser.isValidLink(node.url)) {
                 logger.logHeadings(node, doc);
             }
 
@@ -77,11 +77,11 @@ public class Crawler {
                 String link = linkElem.absUrl("href");
                 String rawChildHtml = linkElem.outerHtml();
 
-                if (!parser.isValidLink(link)) {
+                if (!linkParser.isValidLink(link)) {
                     logger.logBrokenLink(node, rawChildHtml);
                     continue;
                 }
-                if (parser.isCrawlable(link, visitedUrls)) {
+                if (linkParser.isCrawlable(link, visitedUrls)) {
                     CrawlNode child = new CrawlNode(link, rawChildHtml, node.depth + 1, maxDepth);
                     node.children.add(child);
                     phaser.register();

@@ -5,7 +5,7 @@ import java.util.HashSet;
 
 public class InputParser {
     private final String[] arguments;
-    private final Parser parser = new Parser();
+    private final LinkParser linkParser = new LinkParser();
     private final ParsedInputArguments parsedArguments;
 
     public InputParser(String[] args) {
@@ -66,7 +66,7 @@ public class InputParser {
 
 
     private void isURLArgumentValid() throws IllegalArgumentException {
-        if (!parser.isValidLink(this.arguments[0])) {
+        if (!linkParser.isValidLink(this.arguments[0])) {
             throw new IllegalArgumentException("Url Input argument is broken!");
         }
     }
