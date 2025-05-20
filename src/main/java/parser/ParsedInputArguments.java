@@ -7,8 +7,6 @@ public class ParsedInputArguments {
     private int maxDepth;
     private Set<String> allowedDomains;
 
-
-
     public String getStartUrl() {
         return startUrl;
     }
