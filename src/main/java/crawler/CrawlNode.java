@@ -6,7 +6,7 @@ import java.util.List;
 
 public class CrawlNode {
     public int maxDepth;
-    String url;
+    public String url;
     public String rawHtml;
     public int depth;
     public List<String> headings = new ArrayList<>();

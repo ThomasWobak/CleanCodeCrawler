@@ -28,23 +28,36 @@ public class Writer {
         System.out.println("Saved to Markdown");
     }
 
-    private void renderTree(CrawlNode node, StringBuilder out) {
-        if (node.depth > node.maxDepth) {
-            for (String linkLog : node.loggedLinks) {
-                out.append("-->".repeat(node.depth)).append(linkLog).append("\n");
-            }
-        } else {
 
-            out.append("-->".repeat(node.depth)).append("\n<br>link to: ").append(node.rawHtml).append("\n");
-            out.append("-->".repeat(node.depth)).append("<br>depth: ").append(node.depth).append("\n");
-            for (String h : node.headings) {
-                out.append(h);
-            }
-            for (CrawlNode child : node.children) {
-                renderTree(child, out);
-            }
-            out.append("\n");
+    private void renderTree(CrawlNode node, StringBuilder out) {
+        String indent = "-->".repeat(node.depth);
+
+        out.append("<br>").append(indent).append("link to: ").append(node.rawHtml).append("\n");
+        out.append("<br>").append(indent).append("depth: ").append(node.depth).append("\n");
+
+        for (String heading : node.headings) {
+            out.append("# ").append(indent).append(heading.trim()).append("\n");
         }
+
+
+        for (String linkLog : node.loggedLinks) {
+            boolean uniqueLink = true;
+            for (CrawlNode child : node.children) {
+                if (("<br>" + indent + "link to " + child.rawHtml).equals(linkLog)) {
+                    uniqueLink = false;
+                    renderTree(child, out);
+                }
+            }
+            if (uniqueLink) {
+                out.append("<br>").append(indent).append(linkLog.trim()).append("\n");
+            }
+
+        }
+
+
+        out.append("<br>\n");
     }
+
+
 }
 

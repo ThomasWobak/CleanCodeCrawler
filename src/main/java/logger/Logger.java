@@ -35,4 +35,5 @@ public class Logger {
             return 1;
         }
     }
+
 }
