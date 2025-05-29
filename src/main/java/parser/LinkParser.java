@@ -43,7 +43,7 @@ public class LinkParser {
     public boolean isCrawlable(String link, Set<String> visitedUrls, Set<String> allowedDomains) {
         return (!link.isEmpty() && !visitedUrls.contains(link) && isValidLink(link)&&isAllowedDomain(link, allowedDomains));
     }
-    public String normalize(String rawUrl) {
+    public String normalizeUrl(String rawUrl) {
         try {
             URI u = new URI(rawUrl.trim())
                     .normalize();  // collapses “../” etc.

@@ -34,7 +34,7 @@ public class Crawler {
 
     public void startCrawl() throws InterruptedException, IOException {
         List<CrawlNode> roots = new ArrayList<>();
-        String rootUrl=linkParser.normalize(startUrl);
+        String rootUrl = linkParser.normalizeUrl(startUrl);
         if (linkParser.isCrawlable(rootUrl, visitedUrls, allowedDomains)) {
             CrawlNode root = new CrawlNode(rootUrl, "<a>" + rootUrl + "</a>", 0, maxDepth);
             roots.add(root);
@@ -55,17 +55,14 @@ public class Crawler {
     }
 
     protected void crawlLink(CrawlNode node) {
-        String normalizedUrl = linkParser.normalize(node.url);
+        String normalizedUrl = linkParser.normalizeUrl(node.url);
         if (!visitedUrls.add(normalizedUrl)) {
             phaser.arriveAndDeregister();
             return;
         }
-
         try {
             Document doc = linkParser.parseDocument(node.url);
-
             logger.logHeadings(node, doc);
-
             for (Element linkElem : doc.select("a[href]")) {
                 String rawChildHtml = linkElem.outerHtml();
                 String absHref = linkElem.absUrl("href").trim();
@@ -77,7 +74,7 @@ public class Crawler {
                     logger.logBrokenLink(node, rawChildHtml);
                 }
 
-                String normalizedChild = linkParser.normalize(candidate);
+                String normalizedChild = linkParser.normalizeUrl(candidate);
                 if (node.depth + 1 <= maxDepth
                         && linkParser.isAllowedDomain(normalizedChild, allowedDomains)
                         && linkParser.isValidLink(candidate)
@@ -87,7 +84,7 @@ public class Crawler {
                     node.children.add(child);
                     phaser.register();
                     executor.submit(() -> crawlLink(child));
-                }else{
+                } else {
                     logger.logLink(node, rawChildHtml);
                 }
             }
