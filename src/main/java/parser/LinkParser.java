@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.Set;
 
@@ -14,12 +15,7 @@ public class LinkParser {
     private static final int TIMEOUTMILLISECONDS = 20000;
 
 
-    public String cleanUrl(String url) {
-        if (url.endsWith("/") || url.endsWith("#")) {
-            return url.substring(0, url.length() - 1).trim();
-        }
-        return url.trim();
-    }
+
 
     public Document parseDocument(String url) throws IOException {
         try {
@@ -47,6 +43,22 @@ public class LinkParser {
     public boolean isCrawlable(String link, Set<String> visitedUrls, Set<String> allowedDomains) {
         return (!link.isEmpty() && !visitedUrls.contains(link) && isValidLink(link)&&isAllowedDomain(link, allowedDomains));
     }
+    public String normalize(String rawUrl) {
+        try {
+            URI u = new URI(rawUrl.trim())
+                    .normalize();  // collapses “../” etc.
+            String path = u.getPath().replaceAll("/+$", ""); // strip trailing slash
+            return new URI(
+                    u.getScheme().toLowerCase(),
+                    u.getAuthority().toLowerCase(),
+                    path,
+                    null, null
+            ).toString();
+        } catch (Exception e) {
+            return rawUrl.trim();
+        }
+    }
+
 
     public boolean isValidLink(String url) {
         try {

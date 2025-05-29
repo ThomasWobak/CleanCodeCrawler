@@ -32,31 +32,26 @@ public class Writer {
     private void renderTree(CrawlNode node, StringBuilder out) {
         String indent = "-->".repeat(node.depth);
 
-        out.append("<br>").append(indent).append("link to: ").append(node.rawHtml).append("\n");
-        out.append("<br>").append(indent).append("depth: ").append(node.depth).append("\n");
+        out.append("<br>").append(indent)
+                .append("link to: ").append(node.rawHtml).append("\n");
+        out.append("<br>").append(indent)
+                .append("depth: ").append(node.depth).append("\n");
 
         for (String heading : node.headings) {
-            out.append("# ").append(indent).append(heading.trim()).append("\n");
+            out.append("<br>").append(indent)
+                    .append("# ").append(heading.trim()).append("\n");
         }
-
-
         for (String linkLog : node.loggedLinks) {
-            boolean uniqueLink = true;
-            for (CrawlNode child : node.children) {
-                if (("<br>" + indent + "link to " + child.rawHtml).equals(linkLog)) {
-                    uniqueLink = false;
-                    renderTree(child, out);
-                }
-            }
-            if (uniqueLink) {
-                out.append("<br>").append(indent).append(linkLog.trim()).append("\n");
-            }
-
+            out.append("<br>").append(indent)
+                    .append(linkLog.trim()).append("\n");
         }
 
-
-        out.append("<br>\n");
+        for (CrawlNode child : node.children) {
+            renderTree(child, out);
+        }
+        out.append("<br>\n\n");
     }
+
 
 
 }
