@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class InputParserTest {
+class InputParserTest {
 
     private String[] validArguments;
     private String[] invalidArguments;
@@ -12,7 +12,7 @@ public class InputParserTest {
     private InputParser inputArgumentParser;
 
     @BeforeEach
-    public void initializeValidArgumentsString(){
+    protected void initializeValidArgumentsString(){
         validArguments= new String[]{
                 "http://gilead-verein.at",
                 "2",
@@ -22,7 +22,7 @@ public class InputParserTest {
     }
 
     @BeforeEach
-    public void initializeInvalidArgumentsString(){
+    protected void initializeInvalidArgumentsString(){
         invalidArguments= new String[]{
                 "invalidLinkExample",
                 "invalidDepth",
@@ -31,20 +31,20 @@ public class InputParserTest {
     }
 
     @BeforeEach
-    public void initializeCustomArgumentsString(){
+    protected void initializeCustomArgumentsString(){
         customArguments=validArguments.clone();
 
     }
 
     @Test
-    public void testParseInputArgumentsValid() {
+    protected void testParseInputArgumentsValid() {
         inputArgumentParser = new InputParser(validArguments);
         Assertions.assertDoesNotThrow(
                 () -> inputArgumentParser.parseInputArguments());
     }
 
     @Test
-    public void testParseInputArgumentsInvalid() {
+    protected void testParseInputArgumentsInvalid() {
         inputArgumentParser = new InputParser(new String[]{});
         Assertions.assertThrows(
                 Exception.class,
@@ -52,7 +52,7 @@ public class InputParserTest {
     }
 
     @Test
-    public void testAreNumberOfArgumentsValidError(){
+    protected void testAreNumberOfArgumentsValidError(){
         inputArgumentParser = new InputParser(new String[]{});
         IllegalArgumentException numberOfArgumentsException = Assertions.assertThrows(
                 IllegalArgumentException.class,
@@ -69,7 +69,7 @@ public class InputParserTest {
 
 
     @Test
-    public void testIsURLArgumentValidError(){
+    protected void testIsURLArgumentValidError(){
         customArguments[0]=invalidArguments[0];
         inputArgumentParser = new InputParser(customArguments);
 
@@ -83,7 +83,7 @@ public class InputParserTest {
 
 
     @Test
-    public void testIsDepthArgumentValid_NonIntegerError() {
+    protected void testIsDepthArgumentValid_NonIntegerError() {
         customArguments[1] = invalidArguments[1];
         inputArgumentParser = new InputParser(customArguments);
 
@@ -95,7 +95,7 @@ public class InputParserTest {
         Assertions.assertEquals(expectedErrorMessage, nonIntegerInput.getMessage());
     }
     @Test
-    public void testIsDomainArgumentValid_InvalidDomain(){
+    protected void testIsDomainArgumentValid_InvalidDomain(){
         customArguments[2] = invalidArguments[2];
         inputArgumentParser = new InputParser(customArguments);
 
@@ -107,7 +107,7 @@ public class InputParserTest {
         Assertions.assertEquals(expectedErrorMessage, invalidDomain.getMessage());
     }
     @Test
-    public void testIsDomainArgumentValid_StartUrlNotInDomain(){
+    protected void testIsDomainArgumentValid_StartUrlNotInDomain(){
         customArguments[0] = "https://google.at";
         inputArgumentParser = new InputParser(customArguments);
 

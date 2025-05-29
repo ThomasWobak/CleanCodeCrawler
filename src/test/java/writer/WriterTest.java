@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class WriterTest {
+ class WriterTest {
     @TempDir
     Path tempDir;
 
@@ -21,13 +21,13 @@ public class WriterTest {
     private Writer writer;
 
     @BeforeEach
-    public void setUp() {
+    protected void setUp() {
         filePath = tempDir.resolve("output/reports.md");
         writer = new Writer(filePath.toString());
     }
 
     @Test
-    public void testSaveToMarkdown_emptyRoots_createsEmptyFile() throws IOException {
+    protected void testSaveToMarkdown_emptyRoots_createsEmptyFile() throws IOException {
         writer.saveToMarkdown(Collections.emptyList());
         assertTrue(Files.exists(filePath));
         String content = Files.readString(filePath);
@@ -35,7 +35,7 @@ public class WriterTest {
     }
 
     @Test
-    public void testSaveToMarkdown_singleNode() throws IOException {
+    protected void testSaveToMarkdown_singleNode() throws IOException {
         CrawlNode root = new CrawlNode("http://example.com", "<a>http://example.com</a>", 0, 1);
         root.headings.add("Title");
         root.loggedLinks.add("<a href=\"/foo\">Foo</a>");
@@ -57,7 +57,7 @@ public class WriterTest {
     }
 
     @Test
-    public void testSaveToMarkdown_nestedChildren() throws IOException {
+    protected void testSaveToMarkdown_nestedChildren() throws IOException {
         // root node
         CrawlNode root = new CrawlNode("http://root", "<a>root</a>", 0, 2);
         root.headings.add("RootHeading");
@@ -92,7 +92,7 @@ public class WriterTest {
     }
 
     @Test
-    public void testSaveToMarkdown_multipleRoots() throws IOException {
+    protected void testSaveToMarkdown_multipleRoots() throws IOException {
         CrawlNode node1 = new CrawlNode("http://a", "<a>a</a>", 0, 1);
         node1.headings.add("A");
         CrawlNode node2 = new CrawlNode("http://b", "<a>b</a>", 0, 1);
@@ -106,7 +106,7 @@ public class WriterTest {
         assertTrue(content.contains("<br># B\n"));
     }
     @Test
-    public void testSaveToMarkdown_minimalNode() throws IOException {
+    protected void testSaveToMarkdown_minimalNode() throws IOException {
         // A root node with no headings, no loggedLinks, no children
         CrawlNode node = new CrawlNode("http://example.com", "<a>example</a>", 0, 1);
         writer.saveToMarkdown(List.of(node));
@@ -121,7 +121,7 @@ public class WriterTest {
     }
 
     @Test
-    public void testSaveToMarkdown_invalidParentDirectory_throwsIOException() {
+    protected void testSaveToMarkdown_invalidParentDirectory_throwsIOException() {
         Path parentAsFile = tempDir.resolve("notADir");
         assertDoesNotThrow(() -> Files.createFile(parentAsFile));
         Path badFilePath = parentAsFile.resolve("out.md");

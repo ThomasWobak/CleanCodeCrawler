@@ -8,16 +8,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class LoggerTest {
+class LoggerTest {
     private Logger logger;
 
     @BeforeEach
-    public void setUp() {
+    protected void setUp() {
         logger = new Logger();
     }
 
     @Test
-    public void testLogHeadings_singleLevel0() {
+    protected void testLogHeadings_singleLevel0() {
         CrawlNode node = new CrawlNode("http://example.com", "", 0, 1);
         Document doc = Jsoup.parse("<h1>Main Title</h1>");
         logger.logHeadings(node, doc);
@@ -27,7 +27,7 @@ public class LoggerTest {
     }
 
     @Test
-    public void testLogHeadings_multipleLevelsDepth2() {
+    protected void testLogHeadings_multipleLevelsDepth2() {
         CrawlNode node = new CrawlNode("http://example.com", "", 2, 1);
         String html = "<h2>Subheading</h2><h3>Sub-sub</h3>";
         Document doc = Jsoup.parse(html);
@@ -39,7 +39,7 @@ public class LoggerTest {
     }
 
     @Test
-    public void testLogHeadings_variousLevelsDepth1() {
+    protected void testLogHeadings_variousLevelsDepth1() {
         CrawlNode node = new CrawlNode("http://example.com", "", 1, 1);
         String html = "<h1>H1</h1><h2>H2</h2><h3>H3</h3><h4>H4</h4><h5>H5</h5><h6>H6</h6>";
         Document doc = Jsoup.parse(html);
@@ -55,7 +55,7 @@ public class LoggerTest {
     }
 
     @Test
-    public void testLogHeadings_deeperDepthLevel4() {
+    protected void testLogHeadings_deeperDepthLevel4() {
         CrawlNode node = new CrawlNode("http://example.com", "", 4, 1);
         Document doc = Jsoup.parse("<h4>Deep H4</h4>");
         logger.logHeadings(node, doc);
@@ -65,7 +65,7 @@ public class LoggerTest {
     }
 
     @Test
-    public void testLogHeadings_noHeadings() {
+    protected void testLogHeadings_noHeadings() {
         CrawlNode node = new CrawlNode("http://example.com", "", 0, 1);
         Document doc = Jsoup.parse("<p>No headings here</p>");
         logger.logHeadings(node, doc);
@@ -74,7 +74,7 @@ public class LoggerTest {
     }
 
     @Test
-    public void testLogGetHeadingLevel_invalidTag() {
+    protected void testLogGetHeadingLevel_invalidTag() {
         CrawlNode node = new CrawlNode("http://example.com", "", 0, 1);
         Document doc = Jsoup.parse("<hX>Oops</hX>");
         logger.logHeadings(node, doc);
@@ -83,7 +83,7 @@ public class LoggerTest {
     }
 
     @Test
-    public void testLogBrokenLink_depth1() {
+    protected void testLogBrokenLink_depth1() {
         CrawlNode node = new CrawlNode("http://example.com", "", 1, 1);
         String rawHtml = "<a href=\"/foo\">Foo</a>";
         logger.logBrokenLink(node, rawHtml);
@@ -93,7 +93,7 @@ public class LoggerTest {
     }
 
     @Test
-    public void testLogLink_depth3() {
+    protected void testLogLink_depth3() {
         CrawlNode node = new CrawlNode("http://example.com", "", 3, 1);
         String rawHtml = "<a href=\"/bar\">Bar</a>";
         logger.logLink(node, rawHtml);
@@ -102,7 +102,7 @@ public class LoggerTest {
         assertEquals("<br>-->-->-->link to " + rawHtml, node.loggedLinks.get(0));
     }
     @Test
-    public void testGetHeadingLevel_emptyTagNameFallsBackToOne() throws Exception {
+    protected void testGetHeadingLevel_emptyTagNameFallsBackToOne() throws Exception {
 
         java.lang.reflect.Method m = Logger.class.getDeclaredMethod("getHeadingLevel", String.class);
         m.setAccessible(true);
