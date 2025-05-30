@@ -4,11 +4,14 @@ import dto.HeadingInfo;
 import dto.LinkInfo;
 import dto.Page;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class JsoupParser implements Parser {
     private static final int TIMEOUT = 20_000;
@@ -40,9 +43,9 @@ public class JsoupParser implements Parser {
     }
 
     protected List<LinkInfo> extractLinksFromDocument(Document doc) {
-        return doc.select("a[href]")
+        return doc.select("a")
                 .stream()
-                .map(e -> new LinkInfo(e.outerHtml(), e.absUrl("href").trim()))
+                .map(e -> new LinkInfo(e.outerHtml(), e.absUrl("href")))
                 .toList();
     }
 }
