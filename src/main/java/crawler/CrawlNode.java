@@ -13,13 +13,11 @@ public class CrawlNode {
     public List<String> loggedLinks = new ArrayList<>();
     public List<CrawlNode> children = Collections.synchronizedList(new ArrayList<>());
 
-
     public CrawlNode(String url, String rawHtml, int depth, int maxDepth) {
         this.url = url;
         this.rawHtml = rawHtml;
         this.depth = depth;
         this.maxDepth = maxDepth;
     }
-
 }
 

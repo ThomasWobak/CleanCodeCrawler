@@ -1,13 +1,13 @@
 package logger;
 
 import crawler.CrawlNode;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+import dto.HeadingInfo;
+import java.util.List;
 
 public class Logger {
-    public void logHeadings(CrawlNode node, Document doc) {
-        for (Element heading : doc.select("h1,h2,h3,h4,h5,h6")) {
-            node.headings.add(getHeadingLine(node.depth, heading));
+    public void logHeadings(CrawlNode node, List<HeadingInfo> headings) {
+        for (HeadingInfo h : headings) {
+            node.headings.add(getHeadingLine(node.depth, h));
         }
     }
 
@@ -23,17 +23,7 @@ public class Logger {
         return "-->".repeat(depth);
     }
 
-    private String getHeadingLine(int depth, Element heading) {
-        return getIndent(depth) + "# ".repeat(getHeadingLevel(heading.tagName()))
-                + heading.text() + "\n";
+    private String getHeadingLine(int depth, HeadingInfo h) {
+        return getIndent(depth) + "# ".repeat(h.level()) + h.text() + "\n";
     }
-
-    private int getHeadingLevel(String tagName) {
-        try {
-            return Integer.parseInt(tagName.substring(1));
-        } catch (Exception e) {
-            return 1;
-        }
-    }
-
 }

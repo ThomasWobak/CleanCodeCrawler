@@ -2,7 +2,9 @@ package user;
 
 import crawler.Crawler;
 import parser.InputParser;
+import parser.JsoupParser;
 import parser.ParsedInputArguments;
+
 import java.io.IOException;
 
 public class Main {
@@ -11,7 +13,7 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         InputParser inputParser = new InputParser(args);
         ParsedInputArguments input = inputParser.parseInputArguments();
-        Crawler crawler = new Crawler(input);
+        Crawler crawler = new Crawler(input, new JsoupParser());
         crawler.startCrawl();
     }
 }
