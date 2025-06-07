@@ -19,6 +19,11 @@ public class Logger {
         node.loggedLinks.add("<br>" + getIndent(node.depth) + "link to " + rawHtml);
     }
 
+    public void logError(String msg, Throwable t) {
+        System.err.println(msg);
+        t.printStackTrace(System.err);
+    }
+
     private String getIndent(int depth) {
         return "-->".repeat(depth);
     }

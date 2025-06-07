@@ -5,5 +5,5 @@ import dto.Page;
 import java.io.IOException;
 
 public interface Parser {
-    Page parsePage(String url) throws IOException;
+    Page parsePage(String url);
 }

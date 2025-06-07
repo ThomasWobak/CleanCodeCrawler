@@ -5,15 +5,21 @@ import parser.InputParser;
 import parser.JsoupParser;
 import parser.ParsedInputArguments;
 
-import java.io.IOException;
-
 public class Main {
     //Example input arguments:
     //https://gilead-verein.at/ 2 gilead-verein.at hivegames.at
-    public static void main(String[] args) throws IOException, InterruptedException {
-        InputParser inputParser = new InputParser(args);
-        ParsedInputArguments input = inputParser.parseInputArguments();
-        Crawler crawler = new Crawler(input, new JsoupParser());
-        crawler.startCrawl();
+    public static void main(String[] args) {
+        try {
+            InputParser inputParser = new InputParser(args);
+            ParsedInputArguments input = inputParser.parseInputArguments();
+            Crawler crawler = new Crawler(input, new JsoupParser());
+            crawler.startCrawl();
+        } catch (IllegalArgumentException e) {
+            System.err.println("Usage error: " + e.getMessage());
+            System.exit(2);
+        } catch (RuntimeException e) {
+            System.err.println("Crawler failed: " + e.getMessage());
+            System.exit(1);
+        }
     }
 }

@@ -3,6 +3,7 @@ package parser;
 import dto.HeadingInfo;
 import dto.LinkInfo;
 import dto.Page;
+import exception.parser.ParserException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -18,8 +19,13 @@ public class JsoupParser implements Parser {
 
 
     @Override
-    public Page parsePage(String url) throws IOException {
-        Document doc = fetchDocument(url);
+    public Page parsePage(String url) {
+        Document doc = null;
+        try {
+            doc = fetchDocument(url);
+        } catch (IOException e) {
+            throw new ParserException("Failed to parse page at " + url, e);
+        }
         List<HeadingInfo> headings = extractHeadingsFromDocument(doc);
         List<LinkInfo> links = extractLinksFromDocument(doc);
         return new Page(url, headings, links);

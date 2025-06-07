@@ -2,12 +2,13 @@ package crawler;
 
 import dto.LinkInfo;
 import dto.Page;
+import exception.crawler.CrawlerException;
+import exception.parser.ParserException;
 import logger.Logger;
 import parser.ParsedInputArguments;
 import parser.Parser;
 import service.UrlService;
 import writer.Writer;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -20,7 +21,7 @@ public class Crawler {
     private final ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     private final Phaser phaser = new Phaser(1);
     private final Logger logger = new Logger();
-    private final Writer writer = new Writer(FILEPATH);
+    private final Writer writer = Writer.create(FILEPATH);
     private final Parser parser;
     private final UrlService urlService = new UrlService();
     private final Set<String> allowedDomains;
@@ -33,26 +34,29 @@ public class Crawler {
         this.parser = parser;
     }
 
-    public void startCrawl() throws InterruptedException, IOException {
+    public void startCrawl() {
         List<CrawlNode> roots = new ArrayList<>();
-        String rootUrl = urlService.normalize(startUrl);
-        if (urlService.isCrawlable(rootUrl, visitedUrls, allowedDomains)) {
+        try {
+            String rootUrl = urlService.normalize(startUrl);
+            if (!urlService.isCrawlable(rootUrl, visitedUrls, allowedDomains)) {
+                CrawlNode badRoot = new CrawlNode(startUrl, "<a>" + startUrl + "</a>", 0, maxDepth);
+                logger.logBrokenLink(badRoot, badRoot.rawHtml);
+                roots.add(badRoot);
+                return;
+            }
+
             CrawlNode root = new CrawlNode(rootUrl, "<a>" + rootUrl + "</a>", 0, maxDepth);
             roots.add(root);
             phaser.register();
             executor.submit(() -> crawlLink(root));
 
-        } else {
-
-            CrawlNode root = new CrawlNode(startUrl, "<a>" + startUrl + "</a>", 0, maxDepth);
-            logger.logBrokenLink(root, root.rawHtml);
-            roots.add(root);
+            phaser.arriveAndAwaitAdvance();
+        } catch (Exception e) {
+            throw new CrawlerException("Fatal error in startCrawl()", e);
+        } finally {
+            shutdownExecutor();
+            writeReportQuietly(roots);
         }
-
-        phaser.arriveAndAwaitAdvance();
-        executor.shutdown();
-        executor.awaitTermination(1, TimeUnit.MINUTES);
-        writer.saveToMarkdown(roots);
     }
 
     protected void crawlLink(CrawlNode node) {
@@ -87,10 +91,31 @@ public class Crawler {
                 }
             }
 
-        } catch (IOException e) {
+        } catch (ParserException e) {
             logger.logBrokenLink(node, node.rawHtml);
         } finally {
             phaser.arriveAndDeregister();
+        }
+    }
+
+    private void shutdownExecutor() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException ie) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+            logger.logError("Interrupted while shutting down crawler threads", ie);
+        }
+    }
+
+    private void writeReportQuietly(List<CrawlNode> roots) {
+        try {
+            writer.saveToMarkdown(roots);
+        } catch (Exception writeErr) {
+            logger.logError("Failed to write crawl report", writeErr);
         }
     }
 }

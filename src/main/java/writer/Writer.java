@@ -1,8 +1,7 @@
 package writer;
 
-
 import crawler.CrawlNode;
-
+import exception.writer.WriterException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,18 +15,28 @@ public class Writer {
         this.filePath = filePath;
     }
 
-    public void saveToMarkdown(List<CrawlNode> roots) throws IOException {
+    public static Writer create(String filePath) {
+        if (filePath == null || filePath.isBlank()) {
+            throw new IllegalArgumentException("filePath must not be null or empty");
+        }
+        return new Writer(filePath);
+    }
+
+    public void saveToMarkdown(List<CrawlNode> roots) {
         StringBuilder sb = new StringBuilder();
         for (CrawlNode root : roots) {
             renderTree(root, sb);
         }
 
         Path path = Paths.get(filePath);
-        Files.createDirectories(path.getParent());
-        Files.write(path, sb.toString().getBytes());
-        System.out.println("Saved to Markdown");
+        try {
+            Files.createDirectories(path.getParent());
+            Files.write(path, sb.toString().getBytes());
+            System.out.println("Saved to Markdown");
+        } catch (IOException e) {
+            throw new WriterException("Could not write report to " + path, e);
+        }
     }
-
 
     private void renderTree(CrawlNode node, StringBuilder out) {
         String indent = "-->".repeat(node.depth);
@@ -51,8 +60,4 @@ public class Writer {
         }
         out.append("<br>\n\n");
     }
-
-
-
 }
-
