@@ -1,16 +1,15 @@
 package writer;
 
 import crawler.CrawlNode;
+import exception.writer.WriterException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 
  class WriterTest {
@@ -126,6 +125,6 @@ import static org.junit.jupiter.api.Assertions.*;
         assertDoesNotThrow(() -> Files.createFile(parentAsFile));
         Path badFilePath = parentAsFile.resolve("out.md");
         Writer badWriter = new Writer(badFilePath.toString());
-        assertThrows(IOException.class, () -> badWriter.saveToMarkdown(Collections.emptyList()));
+        assertThrows(WriterException.class, () -> badWriter.saveToMarkdown(Collections.emptyList()));
     }
 }

@@ -1,4 +1,4 @@
-package parser;
+package dto;
 
 import java.util.Set;
 

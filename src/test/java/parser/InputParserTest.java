@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/*
 class InputParserTest {
 
     private String[] validArguments;
@@ -120,4 +119,3 @@ class InputParserTest {
         Assertions.assertEquals(expectedErrorMessage, invalidDomain.getMessage());
     }
 }
- */

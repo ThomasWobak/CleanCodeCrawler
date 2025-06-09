@@ -31,7 +31,7 @@ public class UrlService {
             if (!url.startsWith("www.")&&!url.startsWith("http://") && !url.startsWith("https://") && !url.endsWith("jar")) {
                 return false; //Return false for non http/s like mailto: or ftp:
             }
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection connection = openConnection(url);
             connection.setRequestMethod("HEAD");
             connection.setConnectTimeout(TIMEOUTMILLISECONDS);
             connection.setReadTimeout(TIMEOUTMILLISECONDS);
@@ -51,5 +51,9 @@ public class UrlService {
                 && !visited.contains(url)
                 && isValid(url)
                 && isAllowedDomain(url, domains);
+    }
+
+    protected HttpURLConnection openConnection(String url) throws IOException {
+        return (HttpURLConnection)new URL(url).openConnection();
     }
 }

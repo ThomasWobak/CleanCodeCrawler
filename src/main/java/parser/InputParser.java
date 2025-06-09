@@ -1,16 +1,20 @@
 package parser;
 
+import dto.ParsedInputArguments;
+import service.UrlService;
+
 import java.util.Arrays;
 import java.util.HashSet;
 
 public class InputParser {
     private final String[] arguments;
-    private final LinkParser linkParser = new LinkParser();
     private final ParsedInputArguments parsedArguments;
+    private final UrlService urlService;
 
     public InputParser(String[] args) {
         this.arguments = args;
         this.parsedArguments = new ParsedInputArguments();
+        this.urlService = new UrlService();
     }
 
     /**
@@ -65,7 +69,7 @@ public class InputParser {
 
 
     private void isURLArgumentValid() throws IllegalArgumentException {
-        if (!linkParser.isValidLink(this.arguments[0])) {
+        if (!urlService.isValid(this.arguments[0])) {
             throw new IllegalArgumentException("Url Input argument is broken!");
         }
     }

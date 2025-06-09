@@ -6,7 +6,7 @@ import exception.crawler.CrawlerException;
 import exception.parser.ParserException;
 import logger.Logger;
 import parser.JsoupParser;
-import parser.ParsedInputArguments;
+import dto.ParsedInputArguments;
 import parser.Parser;
 import service.UrlService;
 import writer.Writer;

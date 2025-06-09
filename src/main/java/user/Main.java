@@ -2,7 +2,7 @@ package user;
 
 import crawler.Crawler;
 import parser.InputParser;
-import parser.ParsedInputArguments;
+import dto.ParsedInputArguments;
 
 public class Main {
     //Example input arguments:
