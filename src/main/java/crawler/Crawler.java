@@ -1,163 +1,122 @@
 package crawler;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import dto.LinkInfo;
+import dto.Page;
+import exception.crawler.CrawlerException;
+import exception.parser.ParserException;
+import logger.Logger;
+import parser.JsoupParser;
+import dto.ParsedInputArguments;
+import parser.Parser;
+import service.UrlService;
+import writer.Writer;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class Crawler {
     private static final String FILEPATH = "report\\report.md";
-    private static final int INVALIDRESPONSECODES = 400;
-    private static final int TIMEOUTMILLISECONDS = 2000;
-    private final Set<String> visitedUrls = new HashSet<>();
-    private final StringBuilder markdownContent = new StringBuilder();
+
+    private static final int THREAD_POOL_SIZE = 100;
     private final int maxDepth;
+    private final Set<String> visitedUrls = ConcurrentHashMap.newKeySet();
+    private final ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+    private final Phaser phaser = new Phaser(1);
+    private final Logger logger = new Logger();
+    private final Writer writer = Writer.create(FILEPATH);
+    private final Parser parser = new JsoupParser();
+    private final UrlService urlService = new UrlService();
     private final Set<String> allowedDomains;
-    private String currentUrl;
-    private Document document;
-    private Elements headings;
-    private int currentDepth;
-    private Elements links;
+    private final String startUrl;
 
-    public Crawler(int maxDepth, Set<String> allowedDomains, String startUrl) {
-        this.maxDepth = maxDepth;
-        this.allowedDomains = allowedDomains;
-        this.currentUrl = startUrl;
-        this.currentDepth = 0;
+    public Crawler(ParsedInputArguments inputArguments) {
+        this.maxDepth = inputArguments.getMaxDepth();
+        this.allowedDomains = inputArguments.getAllowedDomains();
+        this.startUrl = inputArguments.getStartUrl();
     }
 
-    public void startCrawl() throws IOException {
-        if (isValidLink(currentUrl) && isAllowedDomain(currentUrl)) {
-            cleanUrl();
-            crawlLink(currentUrl, 0);
-        } else {
-            logBrokenLink(currentUrl);
+    public void startCrawl() {
+        List<CrawlNode> roots = new ArrayList<>();
+        try {
+            String rootUrl = urlService.normalize(startUrl);
+            if (!urlService.isCrawlable(rootUrl, visitedUrls, allowedDomains)) {
+                CrawlNode badRoot = new CrawlNode(startUrl, "<a>" + startUrl + "</a>", 0, maxDepth);
+                logger.logBrokenLink(badRoot, badRoot.rawHtml);
+                roots.add(badRoot);
+                return;
+            }
+
+            CrawlNode root = new CrawlNode(rootUrl, "<a>" + rootUrl + "</a>", 0, maxDepth);
+            roots.add(root);
+            phaser.register();
+            executor.submit(() -> crawlLink(root));
+
+            phaser.arriveAndAwaitAdvance();
+        } catch (Exception e) {
+            throw new CrawlerException("Fatal error in startCrawl()", e);
+        } finally {
+            shutdownExecutor();
+            writeReport(roots);
         }
-        saveToMarkdown();
     }
 
-    /***
-     * Crawls a website, logging the headers and further links, then recursively crawls those links if they within the allowed domain
-     * @param url current URL to crawl
-     * @param depth current Depth in the crawl
-     */
-    protected void crawlLink(String url, int depth) {
-        if (depth > maxDepth || visitedUrls.contains(url) || !isAllowedDomain(url)) {
+    protected void crawlLink(CrawlNode node) {
+        String normalizedUrl = urlService.normalize(node.url);
+        if (!visitedUrls.add(normalizedUrl)) {
+            phaser.arriveAndDeregister();
             return;
         }
-        this.currentDepth = depth;
-        this.currentUrl = url;
-        cleanUrl();
-        parse();
-        markAsVisited(currentUrl);
-        logHeadings();
-        for (Element currentLink : links) {
-            String link = currentLink.absUrl("href");
-            logLink(link);
-            if (isCrawlable(link)) {
-                crawlLink(link, depth + 1);
-            }
-        }
-    }
-
-    //Removes trailing /
-    protected void cleanUrl() {
-        if (currentUrl != null && currentUrl.endsWith("/")) {
-            currentUrl = currentUrl.substring(0, currentUrl.length() - 1);
-        }
-    }
-
-    protected void logLink(String link) {
-        if (isValidLink(link)) {
-            logCorrectLink(link);
-        } else {
-            logBrokenLink(link);
-        }
-    }
-
-    protected void createDocument() {
         try {
-            document = Jsoup.connect(currentUrl).get();
+            Page page = parser.parsePage(node.url);
+            logger.logHeadings(node, page.getHeadings());
+            for (LinkInfo link : page.getOutgoingLinks()) {
+                String rawChildHtml = link.rawHtml();
+                String candidate = link.href();
 
-        } catch (IOException e) {
-            System.err.println("Error connecting to " + currentUrl + "\n" + e.getMessage());
-        }
-    }
+                if (!urlService.isValid(candidate)) {
+                    logger.logBrokenLink(node, rawChildHtml);
+                }
 
-    protected void parse() {
-        createDocument();
-        extractHeadings();
-        extractLinks();
-    }
+                String normalizedChild = urlService.normalize(candidate);
+                if (node.depth + 1 <= maxDepth
+                        && urlService.isAllowedDomain(normalizedChild, allowedDomains)
+                        && urlService.isValid(candidate)
+                        && !visitedUrls.contains(normalizedChild)) {
 
-    protected void logBrokenLink(String link) {
-        markdownContent.append(getIndent()).append("--> broken link <").append(link).append(">\n");
-    }
-
-    protected void logCorrectLink(String link) {
-        markdownContent.append(getIndent()).append("--> link to <").append(link).append(">\n");
-    }
-
-    protected boolean isCrawlable(String link) {
-        return (!link.isEmpty() && !visitedUrls.contains(link) && isValidLink(link));
-    }
-
-    protected void extractLinks() {
-        links = document.select("a");
-    }
-
-    protected void extractHeadings() {
-        headings = document.select("h1,h2,h3,h4,h5,h6");
-    }
-
-    protected void logHeadings() {
-        for (Element heading : headings) {
-            markdownContent.append(getIndent()).append(heading).append("\n");
-        }
-    }
-
-    protected String getIndent() {
-        return "--> ".repeat(currentDepth);
-    }
-
-    protected boolean isAllowedDomain(String url) {
-        return allowedDomains.stream().anyMatch(url::contains);
-    }
-
-    protected boolean isValidLink(String url) {
-        try {
-            if (!url.startsWith("http://") && !url.startsWith("https://") && !url.endsWith("jar")) {
-                return false; // Ignore non-HTTP(S) links like mailto:, ftp:, etc.
+                    CrawlNode child = new CrawlNode(candidate, rawChildHtml, node.depth + 1, maxDepth);
+                    node.children.add(child);
+                    phaser.register();
+                    executor.submit(() -> crawlLink(child));
+                } else {
+                    logger.logLink(node, rawChildHtml);
+                }
             }
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            connection.setRequestMethod("HEAD");
-            connection.setConnectTimeout(TIMEOUTMILLISECONDS);
-            connection.setReadTimeout(TIMEOUTMILLISECONDS);
-            return connection.getResponseCode() < INVALIDRESPONSECODES;
-        } catch (IOException e) {
-            return false;
+
+        } catch (ParserException e) {
+            logger.logBrokenLink(node, node.rawHtml);
+        } finally {
+            phaser.arriveAndDeregister();
         }
     }
 
-    protected void saveToMarkdown() throws IOException {
-        java.nio.file.Path path = Paths.get(Crawler.FILEPATH);
-        if (!Files.exists(path)) {
-            Files.createFile(path);
+    private void shutdownExecutor() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.MINUTES)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException ie) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+            logger.logError("Interrupted while shutting down crawler threads", ie);
         }
-        Files.write(path, markdownContent.toString().getBytes());
-        System.out.println("Saved to Markdown");
     }
 
-    protected void markAsVisited(String link) {
-        visitedUrls.add(link);
-        visitedUrls.add(link + "/");
+    private void writeReport(List<CrawlNode> roots) {
+        try {
+            writer.saveToMarkdown(roots);
+        } catch (Exception writeErr) {
+            logger.logError("Failed to write crawl report", writeErr);
+        }
     }
 }

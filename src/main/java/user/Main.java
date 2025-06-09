@@ -1,23 +1,24 @@
 package user;
 
 import crawler.Crawler;
-
-import java.util.Collections;
+import parser.InputParser;
+import dto.ParsedInputArguments;
 
 public class Main {
+    //Example input arguments:
+    //https://gilead-verein.at/ 2 gilead-verein.at hivegames.at
     public static void main(String[] args) {
-        if(args.length!=3){
-            System.out.println("Incorrect arguments");
-            return;
-        }
         try {
-            String startUrl=args[0];
-            int depth= Integer.parseInt(args[1]);
-            String domain=args[2];
-            Crawler crawler=new Crawler(depth, Collections.singleton(domain), startUrl);
+            InputParser inputParser = new InputParser(args);
+            ParsedInputArguments input = inputParser.parseInputArguments();
+            Crawler crawler = new Crawler(input);
             crawler.startCrawl();
-        }catch (Exception e) {
-            System.out.println(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Usage error: " + e.getMessage());
+            System.exit(2);
+        } catch (RuntimeException e) {
+            System.err.println("Crawler failed: " + e.getMessage());
+            System.exit(1);
         }
     }
 }
