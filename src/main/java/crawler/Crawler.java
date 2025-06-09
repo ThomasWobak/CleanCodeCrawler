@@ -55,7 +55,7 @@ public class Crawler {
             throw new CrawlerException("Fatal error in startCrawl()", e);
         } finally {
             shutdownExecutor();
-            writeReportQuietly(roots);
+            writeReport(roots);
         }
     }
 
@@ -111,7 +111,7 @@ public class Crawler {
         }
     }
 
-    private void writeReportQuietly(List<CrawlNode> roots) {
+    private void writeReport(List<CrawlNode> roots) {
         try {
             writer.saveToMarkdown(roots);
         } catch (Exception writeErr) {
