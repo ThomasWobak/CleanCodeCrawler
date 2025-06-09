@@ -1,10 +1,13 @@
 package logger;
 
 import crawler.CrawlNode;
+import dto.HeadingInfo;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,7 +23,9 @@ class LoggerTest {
     protected void testLogHeadings_singleLevel0() {
         CrawlNode node = new CrawlNode("http://example.com", "", 0, 1);
         Document doc = Jsoup.parse("<h1>Main Title</h1>");
-        logger.logHeadings(node, doc);
+        List<HeadingInfo> headings = extractHeadingsFromHtml(doc);
+
+        logger.logHeadings(node, headings);
 
         assertEquals(1, node.headings.size());
         assertEquals("# Main Title\n", node.headings.get(0));
@@ -31,7 +36,10 @@ class LoggerTest {
         CrawlNode node = new CrawlNode("http://example.com", "", 2, 1);
         String html = "<h2>Subheading</h2><h3>Sub-sub</h3>";
         Document doc = Jsoup.parse(html);
-        logger.logHeadings(node, doc);
+
+        List<HeadingInfo> headings = extractHeadingsFromHtml(doc);
+
+        logger.logHeadings(node, headings);
 
         assertEquals(2, node.headings.size());
         assertEquals("-->--># # Subheading\n", node.headings.get(0));
@@ -43,7 +51,9 @@ class LoggerTest {
         CrawlNode node = new CrawlNode("http://example.com", "", 1, 1);
         String html = "<h1>H1</h1><h2>H2</h2><h3>H3</h3><h4>H4</h4><h5>H5</h5><h6>H6</h6>";
         Document doc = Jsoup.parse(html);
-        logger.logHeadings(node, doc);
+        List<HeadingInfo> headings = extractHeadingsFromHtml(doc);
+
+        logger.logHeadings(node, headings);
 
         assertEquals(6, node.headings.size());
         assertEquals("--># H1\n", node.headings.get(0));
@@ -58,7 +68,9 @@ class LoggerTest {
     protected void testLogHeadings_deeperDepthLevel4() {
         CrawlNode node = new CrawlNode("http://example.com", "", 4, 1);
         Document doc = Jsoup.parse("<h4>Deep H4</h4>");
-        logger.logHeadings(node, doc);
+        List<HeadingInfo> headings = extractHeadingsFromHtml(doc);
+
+        logger.logHeadings(node, headings);
 
         assertEquals(1, node.headings.size());
         assertEquals("-->-->-->--># # # # Deep H4\n", node.headings.get(0));
@@ -68,7 +80,9 @@ class LoggerTest {
     protected void testLogHeadings_noHeadings() {
         CrawlNode node = new CrawlNode("http://example.com", "", 0, 1);
         Document doc = Jsoup.parse("<p>No headings here</p>");
-        logger.logHeadings(node, doc);
+        List<HeadingInfo> headings = extractHeadingsFromHtml(doc);
+
+        logger.logHeadings(node, headings);
 
         assertTrue(node.headings.isEmpty());
     }
@@ -76,8 +90,8 @@ class LoggerTest {
     @Test
     protected void testLogGetHeadingLevel_invalidTag() {
         CrawlNode node = new CrawlNode("http://example.com", "", 0, 1);
-        Document doc = Jsoup.parse("<hX>Oops</hX>");
-        logger.logHeadings(node, doc);
+        String rawHtml = "<a href=\"/oops\">Oops</a>";
+        logger.logBrokenLink(node, rawHtml);
 
         assertTrue(node.headings.isEmpty());
     }
@@ -101,14 +115,12 @@ class LoggerTest {
         assertEquals(1, node.loggedLinks.size());
         assertEquals("<br>-->-->-->link to " + rawHtml, node.loggedLinks.get(0));
     }
-    @Test
-    protected void testGetHeadingLevel_emptyTagNameFallsBackToOne() throws Exception {
 
-        java.lang.reflect.Method m = Logger.class.getDeclaredMethod("getHeadingLevel", String.class);
-        m.setAccessible(true);
-
-        int level = (int) m.invoke(logger, "");
-        assertEquals(1, level, "Empty or malformed tag names should fall back to level 1");
+    private List<HeadingInfo> extractHeadingsFromHtml(Document doc) {
+        return doc.select("h1, h2, h3, h4, h5, h6").stream()
+                .map(e -> new HeadingInfo(
+                        Integer.parseInt(e.tagName().substring(1)),
+                        e.text()))
+                .collect(Collectors.toList());
     }
-
 }

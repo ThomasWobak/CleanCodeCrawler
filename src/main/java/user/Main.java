@@ -2,7 +2,6 @@ package user;
 
 import crawler.Crawler;
 import parser.InputParser;
-import parser.JsoupParser;
 import parser.ParsedInputArguments;
 
 public class Main {
@@ -12,7 +11,7 @@ public class Main {
         try {
             InputParser inputParser = new InputParser(args);
             ParsedInputArguments input = inputParser.parseInputArguments();
-            Crawler crawler = new Crawler(input, new JsoupParser());
+            Crawler crawler = new Crawler(input);
             crawler.startCrawl();
         } catch (IllegalArgumentException e) {
             System.err.println("Usage error: " + e.getMessage());

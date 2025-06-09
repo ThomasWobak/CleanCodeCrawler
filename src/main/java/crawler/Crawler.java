@@ -5,6 +5,7 @@ import dto.Page;
 import exception.crawler.CrawlerException;
 import exception.parser.ParserException;
 import logger.Logger;
+import parser.JsoupParser;
 import parser.ParsedInputArguments;
 import parser.Parser;
 import service.UrlService;
@@ -13,7 +14,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Crawler {
-    private static final String FILEPATH = "reports\\report.md";
+    private static final String FILEPATH = "report\\report.md";
 
     private static final int THREAD_POOL_SIZE = 100;
     private final int maxDepth;
@@ -22,16 +23,15 @@ public class Crawler {
     private final Phaser phaser = new Phaser(1);
     private final Logger logger = new Logger();
     private final Writer writer = Writer.create(FILEPATH);
-    private final Parser parser;
+    private final Parser parser = new JsoupParser();
     private final UrlService urlService = new UrlService();
     private final Set<String> allowedDomains;
     private final String startUrl;
 
-    public Crawler(ParsedInputArguments inputArguments, Parser parser) {
+    public Crawler(ParsedInputArguments inputArguments) {
         this.maxDepth = inputArguments.getMaxDepth();
         this.allowedDomains = inputArguments.getAllowedDomains();
         this.startUrl = inputArguments.getStartUrl();
-        this.parser = parser;
     }
 
     public void startCrawl() {
