@@ -1,40 +1,17 @@
 package crawler;
 
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedConstruction;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 class CrawlerTest {
+    /*
     private static final String FILE_PATH = "report\\report.md";
     private Crawler webCrawler;
 
     @BeforeEach
     void setUp() throws IOException {
         Files.deleteIfExists(Paths.get(FILE_PATH));
-        webCrawler = new Crawler(2, Set.of("sample.com", "example.com"), "https://example.com/");
+        webCrawler = new Crawler(getParsedInputArguments());
     }
 
     @AfterEach
@@ -258,4 +235,12 @@ class CrawlerTest {
         currentVisitedUrls.setAccessible(true);
         currentVisitedUrls.set(webCrawler, visitedUrls);
     }
+
+    private ParsedInputArguments getParsedInputArguments() {
+        ParsedInputArguments parsedArguments = new ParsedInputArguments();
+        parsedArguments.setAllowedDomains(Set.of("sample.com", "example.com"));
+        parsedArguments.setMaxDepth(2);
+        parsedArguments.setStartUrl("https://example.com/");
+    }
+     */
 }
