@@ -2,6 +2,7 @@ package writer;
 
 import crawler.CrawlNode;
 import exception.writer.WriterException;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -5,14 +5,9 @@ import dto.LinkInfo;
 import dto.Page;
 import exception.parser.ParserException;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
-
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class JsoupParser implements Parser {
     private static final int TIMEOUT = 20_000;
@@ -20,7 +15,7 @@ public class JsoupParser implements Parser {
 
     @Override
     public Page parsePage(String url) {
-        Document doc = null;
+        Document doc;
         try {
             doc = fetchDocument(url);
         } catch (IOException e) {

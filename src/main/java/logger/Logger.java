@@ -2,6 +2,7 @@ package logger;
 
 import crawler.CrawlNode;
 import dto.HeadingInfo;
+
 import java.util.List;
 
 public class Logger {

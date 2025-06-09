@@ -22,6 +22,7 @@ public class InputParser {
      * If the argument array fits all the requirements and conventions, the information required
      * for the crawler, a ParsedInputArguments object is filled with all the
      * relevant data and then returned.
+     *
      * @return A ParsedInputArguments object, containing only the necessary information required
      * for the crawler to work.
      */
